@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en" ng-app>
+
+<head>
+  <title>Chat Example</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap Core CSS -->
+  <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- MetisMenu CSS -->
+  <link href="../bower_components/metisMenu/dist/metisMenu.min.css" rel="stylesheet">
+  <!-- Timeline CSS -->
+  <link href="../dist/css/timeline.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link href="../dist/css/sb-admin-2.css" rel="stylesheet">
+  <!-- Morris Charts CSS -->
+  <link href="../bower_components/morrisjs/morris.css" rel="stylesheet">
+  <!-- Custom Fonts -->
+  <link href="../bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  <style>
+    body {
+      padding-top: 60px;
+    }
+  </style>
+  <script>
+    function ChatController($scope) {
+      var socket = io.connect();
+
+      $scope.messages = [];
+      $scope.roster = [];
+      $scope.name = '';
+      $scope.text = '';
+
+      socket.on('connect', function() {
+        $scope.setName();
+      });
+
+      socket.on('message', function(msg) {
+        $scope.messages.push(msg);
+        $scope.$apply();
+      });
+
+      socket.on('roster', function(names) {
+        $scope.roster = names;
+        $scope.$apply();
+      });
+
+      $scope.send = function send() {
+        console.log('Sending message:', $scope.text);
+        socket.emit('message', $scope.text);
+        $scope.text = '';
+      };
+
+      $scope.setName = function setName() {
+        socket.emit('identify', $scope.name);
+      };
+    }
+  </script>
+</head>
+
+<body>
+  <div id="wrapper">
+    <div id="page-wrapper" style="min-height: 355px;">
+      <div class="row">
+        <div class="col-lg-4">
+          <div class="container ng-scope" ng-controller="ChatController">
+            <div class="chat-panel panel panel-default">
+              <div class="panel-heading">
+                <i class="fa fa-comments fa-fw"></i> Chat
+                <div class="btn-group pull-right">
+                  <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                    <i class="fa fa-chevron-down"></i>
+                  </button>
+                  <ul class="dropdown-menu slidedown">
+                    <li>
+                      <a href="#">
+                        <i class="fa fa-refresh fa-fw"></i> Refresh
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#">
+                        <i class="fa fa-check-circle fa-fw"></i> Available
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#">
+                        <i class="fa fa-times fa-fw"></i> Busy
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#">
+                        <i class="fa fa-clock-o fa-fw"></i> Away
+                      </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                      <a href="#">
+                        <i class="fa fa-sign-out fa-fw"></i> Sign Out
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <!-- /.panel-heading -->
+              <div class="panel-body">
+                <ul class="chat">
+                  <li ng-repeat="msg in messages" class="ng-scope left clearfix">
+                    <span class="chat-img pull-left">
+                                        <img src="http://placehold.it/50/55C1E7/fff" alt="User Avatar" class="img-circle">
+                                    </span>
+                    <div class="chat-body clearfix">
+                      <div class="header">
+                        <strong class="primary-font" ng-bind="msg.name"></strong>
+                        <small class="pull-right text-muted">
+                                                <i class="fa fa-clock-o fa-fw"></i> 12 mins ago
+                                            </small>
+                      </div>
+                      <p ng-bind="msg.text">
+                      </p>
+                    </div>
+                  </li>
+                  <!--
+                <li class="right clearfix">
+                  <span class="chat-img pull-right">
+                                        <img src="http://placehold.it/50/FA6F57/fff" alt="User Avatar" class="img-circle">
+                                    </span>
+                  <div class="chat-body clearfix">
+                    <div class="header">
+                      <small class=" text-muted">
+                                                <i class="fa fa-clock-o fa-fw"></i> 13 mins ago</small>
+                      <strong class="pull-right primary-font">Bhaumik Patel</strong>
+                    </div>
+                    <p>
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales.
+                    </p>
+                  </div>
+                </li>
+                /-->
+                </ul>
+              </div>
+              <!-- /.panel-body -->
+              <form ng-submit="send()">
+                <div class="panel-footer">
+                  <div class="input-group">
+
+                    <input type="text" ng-model="name" ng-change="setName()" style="min-width: 100px; width: 10%;" class="form-control input-sm" placeholder="Your Name">
+                    <input id="btn-input" type="text" ng-model="text" style="width: 90%;" class="form-control input-sm" placeholder="Type your message here...">
+
+                    <span class="input-group-btn">
+                                      <button class="btn btn-warning btn-sm" id="btn-chat" ng-disabled="!text">
+                                          Send
+                                      </button>
+                                  </span>
+
+                  </div>
+                </div>
+              </form>
+              <!-- /.panel-footer -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--
+  <div class="container" ng-controller="ChatController">
+    <div class="row">
+      <div class="span3">
+        <ul class="nav nav-list well">
+          <li class="nav-header">Local Users</li>
+          <li ng-repeat="user in roster" ng-bind="user">
+          </li>
+        </ul>
+      </div>
+      <div class="span9">
+        <div class="row controls">
+          <form ng-submit="send()">
+            <div class="span2">
+              <input type="text" class="input-block-level" ng-model="name" ng-change="setName()" placeholder="Your Name">
+            </div>
+            <div class="input-append span7">
+              <input type="text" class="span6" ng-model="text" placeholder="Message">
+              <input type="submit" class="span1 btn btn-primary" value="Send" ng-disabled="!text">
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/jquery.min.js"></script>
+  <script src="/js/bootstrap.min.js"></script>
+  <script src="/js/angular.min.js"></script>
+</body>
+
+</html>
